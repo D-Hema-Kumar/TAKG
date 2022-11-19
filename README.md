@@ -1,4 +1,4 @@
-# TAKG
+# TAKG (Time Aware Knowledge Graph)
 
 To use the knowledge graph:
 
