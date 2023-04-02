@@ -170,8 +170,11 @@ def transform_all_player_data(rawData:dict):
         raw_data['transferMarketID'] = raw_data['transferMarketID'].astype(str)
         raw_data['transferMarketTeamID'] = raw_data['transferMarketTeamID'].astype(str)
         #add player and team uri for the TAKG domain
-        raw_data['player_uri'] = raw_data.transferMarketID.apply(create_uri)
-        raw_data['team_uri'] = raw_data.transferMarketTeamID.apply(create_uri)
+        raw_data['player_uri'] = 'p'+raw_data.transferMarketID
+        raw_data['player_uri'] = raw_data.player_uri.apply(create_uri)
+
+        raw_data['team_uri'] = 't'+raw_data.transferMarketTeamID
+        raw_data['team_uri'] = raw_data.team_uri.apply(create_uri)
         raw_data = raw_data.rename(columns=TIME_COLUMN_MAPPING)
         raw_data = replace_invalid_time(raw_data)
         print('Total records in the dataframe:',len(raw_data))
@@ -492,8 +495,8 @@ def process_player_transfer_market_data(transfer_market_data:pd.DataFrame):
     KG and Temporal table"""
     player_transfer_market_data = transfer_market_data.copy()
     # add player_uri & team-uri
-    player_transfer_market_data['player_uri'] = 'TAKG.'+ player_transfer_market_data['transferMarketID']
-    player_transfer_market_data['team_uri'] = 'TAKG.'+ player_transfer_market_data['transferMarketTeamID']
+    player_transfer_market_data['player_uri'] = 'TAKG.p'+ player_transfer_market_data['transferMarketID']
+    player_transfer_market_data['team_uri'] = 'TAKG.t'+ player_transfer_market_data['transferMarketTeamID']
     
     #team KG Data
     tm_team_columns = intersecting_columns(list(player_transfer_market_data.columns),TEAM_COLUMNS)
@@ -541,7 +544,7 @@ def get_player_market_value_insertion_data(inputDict:dict):
     tm_market_data = pd.DataFrame(inputDict, index=[0])
     
     #construct the dataframe
-    tm_market_data['player_uri'] = 'TAKG.'+ tm_market_data['transferMarketID']
+    tm_market_data['player_uri'] = 'TAKG.p'+ tm_market_data['transferMarketID']
     tm_market_data = entity_data_to_triples(tm_market_data,'player_uri',PLAYER_MARKET_VALUE_PREDICATE_MAPPING)
     tm_market_data['start']=''
     tm_market_data['end']=''
@@ -577,7 +580,7 @@ def transform_player_concept_results(player_concept_results:dict,concept:str):
     
     #try column list
     try:
-        cols = list(player_concept_results["results"]["bindings"][1].keys())
+        cols = list(player_concept_results["results"]["bindings"][0].keys())
         #print(cols)
         #creating a data dictionary
         data = {key:[] for key in cols}
@@ -597,7 +600,8 @@ def transform_player_concept_results(player_concept_results:dict,concept:str):
         #print('There were',len(data_frame),'records in the dataframe')
         player_concept_results_data_frame = player_concept_results_data_frame.drop_duplicates()
 
-        player_concept_results_data_frame['player_uri'] = player_concept_results_data_frame.transferMarketID.apply(create_uri)
+        player_concept_results_data_frame['player_uri'] = 'p'+player_concept_results_data_frame.transferMarketID
+        player_concept_results_data_frame['player_uri'] = player_concept_results_data_frame.player_uri.apply(create_uri)
         player_concept_results_data_frame[concept+'_uri'] = player_concept_results_data_frame[concept].str.lstrip("http://www.wikidata.org/entity/").apply(create_uri)
         #print('There are',len(data_frame),'records in the dataframe AFTER dropping duplicates')
 
@@ -636,8 +640,10 @@ def transform_player_SPARQL_results(player_results:dict):
     #print('There were',len(data_frame),'records in the dataframe')
     player_results_data_frame = player_results_data_frame.drop_duplicates()
     
-    player_results_data_frame['player_uri'] = player_results_data_frame.transferMarketID.apply(create_uri)
-    player_results_data_frame['team_uri'] = player_results_data_frame.transferMarketTeamID.apply(create_uri)
+    player_results_data_frame['player_uri'] = 'p'+player_results_data_frame.transferMarketID
+    player_results_data_frame['player_uri'] = player_results_data_frame.player_uri.apply(create_uri)
+    player_results_data_frame['team_uri'] = 't'+player_results_data_frame.transferMarketTeamID
+    player_results_data_frame['team_uri'] = player_results_data_frame.team_uri.apply(create_uri)
     #print('There are',len(data_frame),'records in the dataframe AFTER dropping duplicates')
     
     player_results_data_frame = player_results_data_frame.rename(columns=TIME_COLUMN_MAPPING)

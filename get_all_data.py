@@ -57,9 +57,12 @@ WHERE {
 """
 
 player_results = get_all_data(player_data_query)
+print("Retrieved players data from Wiki")
 player_results_transformed = transform_all_player_data(player_results)
+print("processed players data")
 #write data to a csv
 player_results_transformed.to_csv('./data/playerRawData.csv', index=False)
+print("players data saved to file")
 
 
 
